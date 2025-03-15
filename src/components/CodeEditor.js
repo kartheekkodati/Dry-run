@@ -5,16 +5,11 @@ function CodeEditor({ value, onChange, language, highlightedLine }) {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   const [editorReady, setEditorReady] = useState(false);
+  const [decorations, setDecorations] = useState([]);
   
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-    
-    // Add padding to editor to keep content away from corners
-    const editorDomNode = editor.getDomNode();
-    if (editorDomNode) {
-      editorDomNode.style.padding = '10px';
-    }
     
     // Mark editor as ready after a short delay to avoid resize issues
     setTimeout(() => {
@@ -25,8 +20,13 @@ function CodeEditor({ value, onChange, language, highlightedLine }) {
   useEffect(() => {
     if (editorRef.current && monacoRef.current && highlightedLine !== null && highlightedLine !== undefined && editorReady) {
       try {
+        // Clear previous decorations
+        if (decorations.length > 0) {
+          editorRef.current.deltaDecorations(decorations, []);
+        }
+        
         // Add decoration for highlighted line
-        const decorations = editorRef.current.deltaDecorations([], [
+        const newDecorations = editorRef.current.deltaDecorations([], [
           {
             range: new monacoRef.current.Range(highlightedLine, 1, highlightedLine, 1),
             options: {
@@ -36,14 +36,10 @@ function CodeEditor({ value, onChange, language, highlightedLine }) {
           },
         ]);
         
+        setDecorations(newDecorations);
+        
         // Scroll to the highlighted line
         editorRef.current.revealLineInCenter(highlightedLine);
-        
-        return () => {
-          if (editorRef.current) {
-            editorRef.current.deltaDecorations(decorations, []);
-          }
-        };
       } catch (error) {
         console.error('Error applying editor decoration:', error);
       }
@@ -86,12 +82,16 @@ function CodeEditor({ value, onChange, language, highlightedLine }) {
         minimap: { enabled: true },
         fontSize: 14,
         wordWrap: 'on',
-        automaticLayout: false, // Changed from true to false to prevent resize loops
+        automaticLayout: true, // Changed back to true for proper layout
         lineNumbers: 'on',
         scrollBeyondLastLine: false,
         padding: { top: 15, bottom: 15 },
         folding: true,
-        glyphMargin: false,
+        glyphMargin: true,
+        scrollbar: {
+          verticalScrollbarSize: 12,
+          horizontalScrollbarSize: 12
+        }
       }}
       onMount={handleEditorDidMount}
       className="monaco-editor-container"

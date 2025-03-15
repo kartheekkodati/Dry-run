@@ -27,8 +27,7 @@ function Controls({ onRun, onForward, onBackward, onReset, isDebugging, language
         </button>
         
         <button 
-          onClick={onForward} 
-          disabled={!isDebugging}
+          onClick={onForward}
           style={{ 
             padding: '8px 16px', 
             backgroundColor: isDebugging ? '#2196F3' : '#cccccc', 
@@ -37,13 +36,13 @@ function Controls({ onRun, onForward, onBackward, onReset, isDebugging, language
             borderRadius: '4px',
             cursor: isDebugging ? 'pointer' : 'not-allowed'
           }}
+          disabled={!isDebugging}
         >
           Forward
         </button>
         
         <button 
-          onClick={onBackward} 
-          disabled={!isDebugging}
+          onClick={onBackward}
           style={{ 
             padding: '8px 16px', 
             backgroundColor: isDebugging ? '#FF9800' : '#cccccc', 
@@ -52,21 +51,22 @@ function Controls({ onRun, onForward, onBackward, onReset, isDebugging, language
             borderRadius: '4px',
             cursor: isDebugging ? 'pointer' : 'not-allowed'
           }}
+          disabled={!isDebugging}
         >
           Backward
         </button>
         
         <button 
-          onClick={onReset} 
-          disabled={!isDebugging}
+          onClick={onReset}
           style={{ 
             padding: '8px 16px', 
-            backgroundColor: isDebugging ? '#f44336' : '#cccccc', 
+            backgroundColor: isDebugging ? '#F44336' : '#cccccc', 
             color: 'white', 
             border: 'none', 
             borderRadius: '4px',
             cursor: isDebugging ? 'pointer' : 'not-allowed'
           }}
+          disabled={!isDebugging}
         >
           Reset
         </button>

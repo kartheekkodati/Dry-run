@@ -45,16 +45,24 @@ function App() {
   const parseCodeForDebugging = (code) => {
     const lines = code.split('\n');
     
-    // Find the main function
-    const mainFunctionIndex = lines.findIndex(line => 
-      line.trim().startsWith('function main') || 
-      line.trim() === 'main();'
-    );
+    // Find the main function based on language
+    let mainFunctionIndex = -1;
     
-    if (mainFunctionIndex === -1) {
-      return { steps: [], mainLineNumber: -1 };
+    if (language === 'java') {
+      // For Java, look for "public static void main" or similar patterns
+      mainFunctionIndex = lines.findIndex(line => 
+        line.trim().includes('static void main') || 
+        line.trim().includes('public static void main')
+      );
+    } else {
+      // For JavaScript and other languages
+      mainFunctionIndex = lines.findIndex(line => 
+        line.trim().startsWith('function main') || 
+        line.trim() === 'main();'
+      );
     }
     
+    // If no main function found, still create steps for all lines
     // Create steps from each line of code
     const steps = lines.map((line, index) => ({
       lineNumber: index + 1,
@@ -63,7 +71,10 @@ function App() {
       variables: {}
     }));
     
-    return { steps, mainLineNumber: mainFunctionIndex + 1 };
+    return { 
+      steps, 
+      mainLineNumber: mainFunctionIndex !== -1 ? mainFunctionIndex + 1 : 1 
+    };
   };
 
   // Function to analyze code and determine function information for a specific line
@@ -167,64 +178,53 @@ function App() {
       setOutput('Running code...');
       const result = await executeCode(code, language);
       setOutput(result.output);
+      
+      // Only show the summary in terminal, not the detailed output
       addTerminalHistory({ type: 'system', content: `Code executed with ${language}` });
-      addTerminalHistory({ type: 'output', content: result.output });
       
-      // Set up debugging state
-      const { steps, mainLineNumber } = parseCodeForDebugging(code);
+      // Extract the sum value from the output
+      const sumMatch = result.output.match(/Sum:\s*(\d+)/);
+      if (sumMatch && sumMatch[1]) {
+        addTerminalHistory({ type: 'output', content: `Sum: ${sumMatch[1]}` });
+      } else {
+        addTerminalHistory({ type: 'output', content: result.output });
+      }
       
-      // After execution, get debug information
-      try {
-        const debugResult = await debugCode(code, language);
+      // If code compiles successfully, set up debugging state
+      const { steps } = parseCodeForDebugging(code);
+      
+      // Initialize debugging state with the first line
+      setDebugState({
+        isDebugging: true,
+        currentLine: steps.length > 0 ? steps[0].lineNumber : null,
+        currentStepIndex: 0,
+        steps: steps,
+        variables: {}
+      });
+      
+      // Set function info for the first line
+      if (steps.length > 0) {
+        const lineInfo = analyzeLine(steps[0].lineNumber);
+        setFunctionInfo(lineInfo);
         
-        // If we have debug steps from the backend, use those
-        if (debugResult && debugResult.steps && debugResult.steps.length > 0) {
-          // Get function info for the first line
-          const firstLineInfo = analyzeLine(debugResult.steps[0].line);
-          setFunctionInfo(firstLineInfo);
-          
-          setDebugState({
-            isDebugging: true,
-            currentLine: debugResult.steps[0].line,
-            currentStepIndex: 0,
-            steps: debugResult.steps.map((step, index) => ({
-              lineNumber: step.line,
-              content: step.statement,
-              executed: false,
-              variables: step.variables || {}
-            })),
-            variables: debugResult.steps[0].variables || {}
-          });
-        } else {
-          // Fall back to the simple parsing method
-          const firstLineInfo = analyzeLine(mainLineNumber);
-          setFunctionInfo(firstLineInfo);
-          
-          setDebugState({
-            isDebugging: true,
-            currentLine: mainLineNumber,
-            currentStepIndex: mainLineNumber - 1,
-            steps: steps,
-            variables: {}
-          });
-        }
-      } catch (debugError) {
-        console.warn('Debug information not available:', debugError);
-        // Fall back to the simple parsing method
-        const firstLineInfo = analyzeLine(mainLineNumber);
-        setFunctionInfo(firstLineInfo);
-        
-        setDebugState({
-          isDebugging: true,
-          currentLine: mainLineNumber,
-          currentStepIndex: mainLineNumber - 1,
-          steps: steps,
-          variables: {}
-        });
+        // Don't add debug information to terminal history
+        // This line is removed to prevent showing "Starting debug at line X"
       }
     } catch (error) {
       setOutput(`Error: ${error.message}`);
       addTerminalHistory({ type: 'error', content: `Error: ${error.message}` });
+      
+      // Reset debugging state on error
+      setDebugState({
+        isDebugging: false,
+        currentLine: null,
+        currentStepIndex: -1,
+        steps: [],
+        variables: {}
+      });
+      
+      // Clear the function info
+      setFunctionInfo(null);
     }
   };
 
@@ -254,28 +254,6 @@ function App() {
     // Analyze the line to get function information
     const lineInfo = analyzeLine(nextLine);
     setFunctionInfo(lineInfo);
-    
-    // Log the current line being executed if it's valid
-    if (debugState.currentStepIndex >= 0 && 
-        debugState.currentStepIndex < debugState.steps.length && 
-        debugState.steps[debugState.currentStepIndex]) {
-      const currentLineContent = debugState.steps[debugState.currentStepIndex].content.trim();
-      addTerminalHistory({ 
-        type: 'debug', 
-        content: `Executing: ${currentLineContent}` 
-      });
-      
-      // If there are variables at this step, show them
-      const currentVars = debugState.steps[debugState.currentStepIndex].variables;
-      if (currentVars && Object.keys(currentVars).length > 0) {
-        Object.entries(currentVars).forEach(([name, details]) => {
-          addTerminalHistory({
-            type: 'debug',
-            content: `Variable ${name} = ${details.value} (${details.type})`
-          });
-        });
-      }
-    }
     
     // Update the debug state with the new position
     setDebugState(prev => ({
