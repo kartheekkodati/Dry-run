@@ -19,6 +19,7 @@ function App() {
     steps: [],
     variables: {}
   });
+  const [functionInfo, setFunctionInfo] = useState(null);
 
   const handleCodeChange = (value) => {
     setCode(value);
@@ -65,6 +66,102 @@ function App() {
     return { steps, mainLineNumber: mainFunctionIndex + 1 };
   };
 
+  // Function to analyze code and determine function information for a specific line
+  const analyzeLine = (lineNumber) => {
+    if (!lineNumber || lineNumber < 1) return null;
+    
+    const lines = code.split('\n');
+    if (lineNumber > lines.length) return null;
+    
+    const lineContent = lines[lineNumber - 1].trim();
+    
+    // Basic analysis of the line content
+    let info = {
+      description: null,
+      type: null,
+      operation: null,
+      impact: null
+    };
+    
+    // Variable declaration
+    if (lineContent.match(/^(let|const|var)\s+\w+\s*=/)) {
+      const varName = lineContent.match(/^(let|const|var)\s+(\w+)/)[2];
+      info.type = 'Variable Declaration';
+      info.description = `Declares a new variable named '${varName}'`;
+      info.operation = lineContent.includes('=') ? 'Declaration with assignment' : 'Declaration only';
+      info.impact = `Creates a new variable in the current scope`;
+    }
+    // Function declaration
+    else if (lineContent.match(/^function\s+\w+\s*\(/)) {
+      const funcName = lineContent.match(/^function\s+(\w+)/)[1];
+      info.type = 'Function Declaration';
+      info.description = `Defines a function named '${funcName}'`;
+      info.operation = 'Creates a new function';
+      info.impact = `Makes function '${funcName}' available in the current scope`;
+    }
+    // Function call
+    else if (lineContent.match(/\w+\s*\(/)) {
+      const funcName = lineContent.match(/(\w+)\s*\(/)[1];
+      info.type = 'Function Call';
+      info.description = `Calls function '${funcName}'`;
+      info.operation = 'Executes function code';
+      info.impact = `Transfers control to function '${funcName}'`;
+    }
+    // Assignment
+    else if (lineContent.match(/\w+\s*=/)) {
+      const varName = lineContent.match(/(\w+)\s*=/)[1];
+      info.type = 'Assignment';
+      info.description = `Assigns a value to variable '${varName}'`;
+      info.operation = 'Value assignment';
+      info.impact = `Updates the value of '${varName}'`;
+    }
+    // Return statement
+    else if (lineContent.match(/^return\s/)) {
+      info.type = 'Return Statement';
+      info.description = 'Returns a value from the function';
+      info.operation = 'Function exit';
+      info.impact = 'Ends function execution and returns control to caller';
+    }
+    // If statement
+    else if (lineContent.match(/^if\s*\(/)) {
+      info.type = 'Conditional Statement';
+      info.description = 'Evaluates a condition';
+      info.operation = 'Conditional branching';
+      info.impact = 'Controls program flow based on condition result';
+    }
+    // Loop
+    else if (lineContent.match(/^(for|while)\s*\(/)) {
+      const loopType = lineContent.match(/^(for|while)/)[1];
+      info.type = `${loopType.charAt(0).toUpperCase() + loopType.slice(1)} Loop`;
+      info.description = `Initiates a ${loopType} loop`;
+      info.operation = 'Iterative execution';
+      info.impact = 'Repeats code block until condition is false';
+    }
+    // Console log
+    else if (lineContent.match(/console\.log/)) {
+      info.type = 'Console Output';
+      info.description = 'Outputs information to the console';
+      info.operation = 'Debugging/Logging';
+      info.impact = 'Displays values in the console for debugging';
+    }
+    // Comment
+    else if (lineContent.match(/^\/\//)) {
+      info.type = 'Comment';
+      info.description = 'Code comment (not executed)';
+      info.operation = 'Documentation';
+      info.impact = 'No runtime impact';
+    }
+    // Default case
+    else {
+      info.type = 'Code Statement';
+      info.description = 'General code statement';
+      info.operation = 'Execution';
+      info.impact = 'Performs the specified operation';
+    }
+    
+    return info;
+  };
+
   const handleRun = async () => {
     try {
       setOutput('Running code...');
@@ -76,14 +173,55 @@ function App() {
       // Set up debugging state
       const { steps, mainLineNumber } = parseCodeForDebugging(code);
       
-      setDebugState({
-        isDebugging: true,
-        currentLine: mainLineNumber,
-        currentStepIndex: mainLineNumber - 1,
-        steps: steps,
-        variables: {}
-      });
-      
+      // After execution, get debug information
+      try {
+        const debugResult = await debugCode(code, language);
+        
+        // If we have debug steps from the backend, use those
+        if (debugResult && debugResult.steps && debugResult.steps.length > 0) {
+          // Get function info for the first line
+          const firstLineInfo = analyzeLine(debugResult.steps[0].line);
+          setFunctionInfo(firstLineInfo);
+          
+          setDebugState({
+            isDebugging: true,
+            currentLine: debugResult.steps[0].line,
+            currentStepIndex: 0,
+            steps: debugResult.steps.map((step, index) => ({
+              lineNumber: step.line,
+              content: step.statement,
+              executed: false,
+              variables: step.variables || {}
+            })),
+            variables: debugResult.steps[0].variables || {}
+          });
+        } else {
+          // Fall back to the simple parsing method
+          const firstLineInfo = analyzeLine(mainLineNumber);
+          setFunctionInfo(firstLineInfo);
+          
+          setDebugState({
+            isDebugging: true,
+            currentLine: mainLineNumber,
+            currentStepIndex: mainLineNumber - 1,
+            steps: steps,
+            variables: {}
+          });
+        }
+      } catch (debugError) {
+        console.warn('Debug information not available:', debugError);
+        // Fall back to the simple parsing method
+        const firstLineInfo = analyzeLine(mainLineNumber);
+        setFunctionInfo(firstLineInfo);
+        
+        setDebugState({
+          isDebugging: true,
+          currentLine: mainLineNumber,
+          currentStepIndex: mainLineNumber - 1,
+          steps: steps,
+          variables: {}
+        });
+      }
     } catch (error) {
       setOutput(`Error: ${error.message}`);
       addTerminalHistory({ type: 'error', content: `Error: ${error.message}` });
@@ -93,6 +231,7 @@ function App() {
   const handleForward = () => {
     // Check if debugging is active
     if (!debugState.isDebugging) {
+      console.log('Debugging is not active');
       return;
     }
     
@@ -112,8 +251,11 @@ function App() {
     
     const nextLine = debugState.steps[nextIndex].lineNumber;
     
-    // Log the current line being executed if it exists
-    // Only try to access currentStepIndex if it's valid
+    // Analyze the line to get function information
+    const lineInfo = analyzeLine(nextLine);
+    setFunctionInfo(lineInfo);
+    
+    // Log the current line being executed if it's valid
     if (debugState.currentStepIndex >= 0 && 
         debugState.currentStepIndex < debugState.steps.length && 
         debugState.steps[debugState.currentStepIndex]) {
@@ -122,6 +264,17 @@ function App() {
         type: 'debug', 
         content: `Executing: ${currentLineContent}` 
       });
+      
+      // If there are variables at this step, show them
+      const currentVars = debugState.steps[debugState.currentStepIndex].variables;
+      if (currentVars && Object.keys(currentVars).length > 0) {
+        Object.entries(currentVars).forEach(([name, details]) => {
+          addTerminalHistory({
+            type: 'debug',
+            content: `Variable ${name} = ${details.value} (${details.type})`
+          });
+        });
+      }
     }
     
     // Update the debug state with the new position
@@ -129,6 +282,7 @@ function App() {
       ...prev,
       currentLine: nextLine,
       currentStepIndex: nextIndex,
+      variables: debugState.steps[nextIndex]?.variables || {},
       steps: prev.steps.map((step, idx) => 
         idx === debugState.currentStepIndex && debugState.currentStepIndex >= 0 ? 
           { ...step, executed: true } : step
@@ -145,6 +299,10 @@ function App() {
     
     const prevIndex = debugState.currentStepIndex - 1;
     const prevLine = debugState.steps[prevIndex].lineNumber;
+    
+    // Analyze the line to get function information
+    const lineInfo = analyzeLine(prevLine);
+    setFunctionInfo(lineInfo);
     
     // Update the current line and step index
     setDebugState(prev => ({
@@ -166,6 +324,9 @@ function App() {
       steps: [],
       variables: {}
     });
+    
+    // Clear the function info
+    setFunctionInfo(null);
     
     // Clear the dry run console output
     setOutput('');
@@ -215,6 +376,7 @@ function App() {
             currentStepIndex={debugState.currentStepIndex}
             variables={debugState.variables}
             output={output}
+            functionInfo={functionInfo}
           />
         </div>
       </div>
