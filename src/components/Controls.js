@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Controls({ onRun, language, onLanguageChange }) {
+function Controls({ onRun, onForward, onBackward, onReset, isDebugging, language, onLanguageChange }) {
   const languages = [
     { value: 'javascript', label: 'JavaScript' },
     { value: 'python', label: 'Python' },
@@ -10,9 +10,66 @@ function Controls({ onRun, language, onLanguageChange }) {
   ];
 
   return (
-    <div className="controls">
-      <div className="control-buttons">
-        <button onClick={onRun}>Run</button>
+    <div className="controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0' }}>
+      <div className="control-buttons" style={{ display: 'flex', gap: '10px' }}>
+        <button 
+          onClick={onRun} 
+          style={{ 
+            padding: '8px 16px', 
+            backgroundColor: '#4CAF50', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Run
+        </button>
+        
+        <button 
+          onClick={onForward} 
+          disabled={!isDebugging}
+          style={{ 
+            padding: '8px 16px', 
+            backgroundColor: isDebugging ? '#2196F3' : '#cccccc', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px',
+            cursor: isDebugging ? 'pointer' : 'not-allowed'
+          }}
+        >
+          Forward
+        </button>
+        
+        <button 
+          onClick={onBackward} 
+          disabled={!isDebugging}
+          style={{ 
+            padding: '8px 16px', 
+            backgroundColor: isDebugging ? '#FF9800' : '#cccccc', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px',
+            cursor: isDebugging ? 'pointer' : 'not-allowed'
+          }}
+        >
+          Backward
+        </button>
+        
+        <button 
+          onClick={onReset} 
+          disabled={!isDebugging}
+          style={{ 
+            padding: '8px 16px', 
+            backgroundColor: isDebugging ? '#f44336' : '#cccccc', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '4px',
+            cursor: isDebugging ? 'pointer' : 'not-allowed'
+          }}
+        >
+          Reset
+        </button>
       </div>
       
       <div className="language-selector">
