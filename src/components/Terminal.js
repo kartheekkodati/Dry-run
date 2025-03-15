@@ -2,11 +2,12 @@ import React, { useEffect, useRef } from 'react';
 
 function Terminal({ history, input, onInputChange, onSubmit }) {
   const terminalRef = useRef(null);
+  const contentRef = useRef(null);
   
   useEffect(() => {
     // Scroll to bottom when history changes
-    if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    if (contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
     }
   }, [history]);
 
@@ -17,10 +18,13 @@ function Terminal({ history, input, onInputChange, onSubmit }) {
     }
   };
 
+  // Limit the number of history items to display to prevent excessive growth
+  const displayHistory = history.slice(-100); // Show only the last 100 entries
+
   return (
     <div className="terminal-container" ref={terminalRef}>
-      <div className="terminal-history">
-        {history.map((entry, index) => (
+      <div className="terminal-history" ref={contentRef} style={{ maxHeight: '150px', overflowY: 'auto' }}>
+        {displayHistory.map((entry, index) => (
           <div key={index} className={`terminal-entry terminal-${entry.type}`}>
             {entry.content}
           </div>

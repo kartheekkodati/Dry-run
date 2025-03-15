@@ -2,41 +2,133 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent overall page scrolling */
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-radius: 5px 5px 0 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.control-buttons button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.control-buttons button:hover {
+  background-color: #45a049;
 }
 
 .main-content {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  gap: 20px;
+  margin-bottom: 20px;
+  overflow: hidden; /* Prevent content overflow */
 }
 
 .editor-container {
   flex: 1;
-  position: relative;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-controls {
+  flex-shrink: 0;
 }
 
 .dry-run-container {
-  width: 40%;
-  overflow: auto;
-  border-left: 1px solid #f4f0f0;
-}
-
-/* Fix for ResizeObserver loop error */
-.monaco-editor {
-  contain: strict;
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   overflow: hidden;
+  background-color: white;
 }
 
-.monaco-editor-container {
-  height: 100%;
-  width: 100%;
-  position: relative;
+.terminal-container {
+  height: 200px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
   overflow: hidden;
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  display: flex;
+  flex-direction: column;
 }
 
-.highlighted-line {
-  background-color: rgba(255, 255, 0, 0.2);
-  border-left: 3px solid yellow;
+.terminal-header {
+  background-color: #333;
+  padding: 5px 10px;
+  font-weight: bold;
+}
+
+.terminal-history {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-family: monospace;
+}
+
+.terminal-input-line {
+  display: flex;
+  padding: 5px 10px;
+  background-color: #2d2d2d;
+  align-items: center;
+}
+
+.terminal-prompt {
+  color: #4CAF50;
+  margin-right: 5px;
+}
+
+.terminal-input {
+  flex: 1;
+  background-color: transparent;
+  border: none;
+  color: #f0f0f0;
+  font-family: monospace;
+  outline: none;
+}
+
+.terminal-entry {
+  margin: 5px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.terminal-input {
+  color: #64B5F6;
+}
+
+.terminal-output {
+  color: #f0f0f0;
+}
+
+.terminal-error {
+  color: #FF5252;
+}
+
+.terminal-system {
+  color: #FFD54F;
+  font-style: italic;
 }

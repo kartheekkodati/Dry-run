@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Controls({ onRun, onDebug, onStepForward, onStepBackward, onReset, language, onLanguageChange }) {
+function Controls({ onRun, language, onLanguageChange }) {
   const languages = [
     { value: 'javascript', label: 'JavaScript' },
     { value: 'python', label: 'Python' },
@@ -13,10 +13,6 @@ function Controls({ onRun, onDebug, onStepForward, onStepBackward, onReset, lang
     <div className="controls">
       <div className="control-buttons">
         <button onClick={onRun}>Run</button>
-        
-        <button onClick={onStepForward}>Step Forward</button>
-        <button onClick={onStepBackward}>Step Backward</button>
-        <button onClick={onReset}>Reset</button>
       </div>
       
       <div className="language-selector">

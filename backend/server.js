@@ -11,7 +11,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhyost:3000",
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"]
   }
 });
@@ -107,6 +107,11 @@ const PORT = parseInt(process.env.PORT || '8080', 10);
 
 // Start server with port fallback mechanism
 function startServer(port) {
+  // Close the server if it's already listening
+  if (server.listening) {
+    server.close();
+  }
+  
   server.listen(port, () => {
     console.log(`Server running on port ${port}`);
   }).on('error', (err) => {
