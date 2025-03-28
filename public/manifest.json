@@ -1,0 +1,9 @@
+{
+  "short_name": "Code Editor",
+  "name": "Code Editor with Dry Run Console",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

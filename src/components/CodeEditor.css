@@ -1,0 +1,65 @@
+/* Base highlight style */
+.highlighted-line {
+  background-color: rgba(255, 255, 0, 0.3) !important;
+  border-left: 3px solid #ffcc00 !important;
+}
+
+.highlighted-line-gutter {
+  background-color: #ffcc00 !important;
+  width: 5px !important;
+}
+
+.highlighted-line-inline {
+  background-color: rgba(255, 255, 0, 0.2) !important;
+}
+
+/* Conditional statement highlight */
+.highlighted-line-if {
+  background-color: rgba(156, 39, 176, 0.2) !important;
+  border-left: 3px solid #9c27b0 !important;
+}
+
+.highlighted-line-if-gutter {
+  background-color: #9c27b0 !important;
+  width: 5px !important;
+}
+
+.highlighted-line-if-inline {
+  background-color: rgba(156, 39, 176, 0.15) !important;
+}
+
+/* Loop highlight */
+.highlighted-line-loop {
+  background-color: rgba(255, 152, 0, 0.2) !important;
+  border-left: 3px solid #ff9800 !important;
+}
+
+.highlighted-line-loop-gutter {
+  background-color: #ff9800 !important;
+  width: 5px !important;
+}
+
+.highlighted-line-loop-inline {
+  background-color: rgba(255, 152, 0, 0.15) !important;
+}
+
+/* Function highlight */
+.highlighted-line-function {
+  background-color: rgba(33, 150, 243, 0.2) !important;
+  border-left: 3px solid #2196f3 !important;
+}
+
+.highlighted-line-function-gutter {
+  background-color: #2196f3 !important;
+  width: 5px !important;
+}
+
+.highlighted-line-function-inline {
+  background-color: rgba(33, 150, 243, 0.15) !important;
+}
+
+/* Monaco editor container */
+.monaco-editor-container {
+  height: 100%;
+  width: 100%;
+}

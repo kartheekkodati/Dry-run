@@ -1,0 +1,130 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-container {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #ccc;
+}
+
+.editor-controls {
+  border-bottom: 1px solid #ccc;
+}
+
+.dry-run-container {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Highlighted line in the code editor */
+.highlighted-line {
+  background-color: rgba(255, 255, 0, 0.2) !important;
+  border-left: 3px solid #ffcc00 !important;
+}
+
+/* Gutter decoration for highlighted lines */
+.highlighted-line-gutter {
+  background-color: #ffcc00 !important;
+  width: 5px !important;
+}
+
+/* Different highlight colors for different control structures */
+.highlighted-line-if {
+  background-color: rgba(156, 39, 176, 0.1) !important;
+  border-left: 3px solid #9c27b0 !important;
+}
+
+.highlighted-line-if-gutter {
+  background-color: #9c27b0 !important;
+  width: 5px !important;
+}
+
+.highlighted-line-loop {
+  background-color: rgba(255, 152, 0, 0.1) !important;
+  border-left: 3px solid #ff9800 !important;
+}
+
+.highlighted-line-loop-gutter {
+  background-color: #ff9800 !important;
+  width: 5px !important;
+}
+
+.highlighted-line-function {
+  background-color: rgba(33, 150, 243, 0.1) !important;
+  border-left: 3px solid #2196f3 !important;
+}
+
+.highlighted-line-function-gutter {
+  background-color: #2196f3 !important;
+  width: 5px !important;
+}
+
+/* Monaco editor container */
+.monaco-editor-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* Terminal styles */
+.terminal {
+  height: 200px;
+  background-color: #1e1e1e;
+  color: #f0f0f0;
+  padding: 10px;
+  font-family: 'Courier New', monospace;
+  overflow-y: auto;
+  border-top: 1px solid #333;
+}
+
+.terminal-history {
+  margin-bottom: 10px;
+}
+
+.terminal-input-container {
+  display: flex;
+}
+
+.terminal-prompt {
+  margin-right: 5px;
+}
+
+.terminal-input {
+  flex: 1;
+  background-color: transparent;
+  border: none;
+  color: #f0f0f0;
+  font-family: 'Courier New', monospace;
+  outline: none;
+}
+
+/* Terminal message types */
+.terminal-message-system {
+  color: #8bc34a;
+}
+
+.terminal-message-input {
+  color: #ffffff;
+}
+
+.terminal-message-output {
+  color: #03a9f4;
+}
+
+.terminal-message-error {
+  color: #f44336;
+}
+
+.terminal-message-debug {
+  color: #ff9800;
+}
